@@ -49,10 +49,10 @@ void fatalError(const char* error) {
 
 void setupBNO08x() {
     if (!bno08x.enableReport(SH2_ACCELEROMETER, 10000)) {
-        fatalError("BNO08x accelerometer enable failed");
+        fatalError("BNO08x accelerometer init failed");
     }
     if (!bno08x.enableReport(SH2_ARVR_STABILIZED_RV, 5000)) {
-        fatalError("BNO08x gyroscope enable failed");
+        fatalError("BNO08x gyroscope init failed");
     }
 }
 
