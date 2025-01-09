@@ -7,6 +7,7 @@
 #include <Adafruit_BMP280.h>
 #include <Adafruit_BNO08x.h>
 #include <TinyGPS++.h>
+#include <Servo.h>
 
 #include "pins.h"
 #include "sensors.hpp"
@@ -31,6 +32,8 @@ SDLib::File logFile;
 TinyGPSPlus gps;
 Adafruit_BNO08x bno08x(-1);
 Adafruit_BMP280 bmp280;
+
+Servo legServo;
 
 uint32_t sensedDataIndex = 0;
 
@@ -80,6 +83,11 @@ void setup() {
         logFile.flush();
     }
 
+    legServo.write(0);
+    delay(1000);
+    legServo.write(90);
+    delay(1000);
+    legServo.write(180);
 }
 
 SensedData readSensors() {

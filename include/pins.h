@@ -2,5 +2,7 @@
 
 #define PIN_SD_SELECT 11
 
+#define PIN_LEG_SERVO 1
+
 #define PIN_GPS_TX 0
 #define PIN_GPS_RX 1
