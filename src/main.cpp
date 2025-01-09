@@ -30,6 +30,7 @@ SDLib::File logFile;
 
 TinyGPSPlus gps;
 Adafruit_BNO08x bno08x(-1);
+Adafruit_BMP280 bmp280;
 
 uint32_t sensedDataIndex = 0;
 
@@ -53,12 +54,6 @@ void setupBNO08x() {
     if (!bno08x.enableReport(SH2_ARVR_STABILIZED_RV, 5000)) {
         fatalError("BNO08x gyroscope enable failed");
     }
-    if (!bno08x.enableReport(SH2_TEMPERATURE, 1000)) {
-        fatalError("BNO08x temperature enable failed");
-    }
-    if (!bno08x.enableReport(SH2_PRESSURE, 1000)) {
-        fatalError("BNO08x pressure enable failed");
-    }
 }
 
 void setup() {
@@ -68,6 +63,10 @@ void setup() {
 
     if (!bno08x.begin_I2C()) {
         fatalError("BNO08x init failed");
+    }
+
+    if (!bmp280.begin(0x76)) {
+        fatalError("BMP280 init failed");
     }
 
     setupBNO08x();
@@ -96,8 +95,8 @@ SensedData readSensors() {
         }
     }
 
-    float pressure = NAN;
-    float temperature = NAN;
+    float pressure = bmp280.readPressure();
+    float temperature = bmp280.readTemperature();
 
     uint8_t readEventCount = 0;
 
@@ -133,14 +132,6 @@ SensedData readSensors() {
                 gyroscope[1] = angles.pitch;
                 gyroscope[2] = angles.yaw;
                 break;
-            }
-
-            case SH2_TEMPERATURE: {
-                temperature = sensorData.un.temperature.value;
-            }
-
-            case SH2_PRESSURE: {
-                pressure = sensorData.un.pressure.value;
             }
         
             default: break;
