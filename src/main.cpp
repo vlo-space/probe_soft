@@ -7,15 +7,18 @@
 #include <Adafruit_BMP280.h>
 #include <Adafruit_BNO08x.h>
 #include <TinyGPS++.h>
+#include <CanSatKit.h>
+#include <CanSatKitRadio.h>
 
 #include "pins.h"
 #include "sensors.hpp"
 #include "angles_util.hpp"
 
-#define GPS_READ_BUFFER_SIZE    32
-#define WRITE_PERIOD            150
-#define READ_DELAY              3
-#define SENSED_DATA_BUFFER_SIZE 256
+#define GPS_READ_BUFFER_SIZE     32
+#define WRITE_PERIOD             75
+#define READ_DELAY               3
+#define SENSED_DATA_BUFFER_SIZE  3
+#define RADIO_PACKET_FRAME_COUNT 2
 
 #define ACCEL_OFFSET_X          (0)
 #define ACCEL_OFFSET_Y          (0)
@@ -31,6 +34,13 @@ SDLib::File logFile;
 TinyGPSPlus gps;
 Adafruit_BNO08x bno08x(-1);
 Adafruit_BMP280 bmp280;
+
+CanSatKit::Radio radio(CanSatKit::Pins::Radio::ChipSelect,
+                        CanSatKit::Pins::Radio::DIO0,
+                        433.0,
+                        CanSatKit::Bandwidth_500000_Hz,
+                        CanSatKit::SpreadingFactor_7,
+                        CanSatKit::CodingRate_4_8);
 
 uint32_t sensedDataIndex = 0;
 
@@ -68,6 +78,11 @@ void setup() {
     if (!bmp280.begin(0x76)) {
         fatalError("BMP280 init failed");
     }
+
+    if (!radio.begin()) {
+        fatalError("radio init failed");
+    }
+    radio.disable_debug();
 
     setupBNO08x();
 
@@ -171,6 +186,16 @@ void loop() {
         lastWrite = millis();
         digitalWrite(PIN_LED, true);
 
+        struct __attribute__((packed)) Frame  {
+            char signature[3];
+            SensedData data;
+        };
+
+        Frame radioBuffer[RADIO_PACKET_FRAME_COUNT] = {{0}};
+        uint8_t radioBufferedCount = 0;
+
+        // radio.flush();
+
         while (!collectedData.empty()) {
             const SensedData* data = collectedData.front();
             
@@ -247,6 +272,14 @@ void loop() {
             logFile.print('\t');
             logFile.print(data->gpsAltitude, 6);
             logFile.println();
+
+            radioBuffer[radioBufferedCount] = (Frame){ .signature = {'V', 'L', 'O'} };
+            memcpy(&radioBuffer[radioBufferedCount].data, data, sizeof(SensedData));
+
+            if (++radioBufferedCount >= RADIO_PACKET_FRAME_COUNT) {
+                radio.transmit((uint8_t*) &radioBuffer, sizeof(radioBuffer));   
+                radioBufferedCount = 0;
+            }
 
             collectedData.pop();
         }
