@@ -194,8 +194,6 @@ void loop() {
         Frame radioBuffer[RADIO_PACKET_FRAME_COUNT] = {{0}};
         uint8_t radioBufferedCount = 0;
 
-        // radio.flush();
-
         while (!collectedData.empty()) {
             const SensedData* data = collectedData.front();
             
