@@ -30,4 +30,9 @@ struct SensedData {
     double   gpsAltitude;
 };
 
+struct __attribute__((packed)) Frame  {
+    char signature[3];
+    SensedData data;
+};
+
 #endif

@@ -11,7 +11,7 @@
 #include <CanSatKitRadio.h>
 
 #include "pins.h"
-#include "sensors.hpp"
+#include "data.h"
 #include "angles_util.hpp"
 
 #define GPS_READ_BUFFER_SIZE     32
@@ -185,11 +185,6 @@ void loop() {
     if (collectedData.size() == SENSED_DATA_BUFFER_SIZE || millis() - lastWrite >= WRITE_PERIOD) {
         lastWrite = millis();
         digitalWrite(PIN_LED, true);
-
-        struct __attribute__((packed)) Frame  {
-            char signature[3];
-            SensedData data;
-        };
 
         Frame radioBuffer[RADIO_PACKET_FRAME_COUNT] = {{0}};
         uint8_t radioBufferedCount = 0;
