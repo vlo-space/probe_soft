@@ -14,6 +14,7 @@
 #include "data.h"
 #include "angles_util.hpp"
 
+#define GPS_BAUD_RATE 9600
 #define GPS_READ_BUFFER_SIZE     32
 #define WRITE_PERIOD             75
 #define READ_DELAY               3

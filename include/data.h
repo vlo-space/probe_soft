@@ -7,8 +7,6 @@
 
 #include "pins.h"
 
-#define GPS_BAUD_RATE 9600
-
 struct SensedData {
     uint32_t index;
 
