@@ -3,10 +3,6 @@
 
 #include <cstdint>
 
-#include <TinyGPS++.h>
-
-#include "pins.h"
-
 struct SensedData {
     uint32_t index;
 
