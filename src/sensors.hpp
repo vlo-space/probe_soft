@@ -17,6 +17,7 @@ struct SensedData {
 
     float    temperature;
     float    pressure;
+    uint16_t vibration;
 
     float    acceleration[3];
     uint8_t  accelerationStatus;

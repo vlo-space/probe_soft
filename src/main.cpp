@@ -20,6 +20,8 @@
 #define SENSED_DATA_BUFFER_SIZE  3
 #define RADIO_PACKET_FRAME_COUNT 2
 
+#define VIBRATION_SENSOR_A1 A1
+
 #define ACCEL_OFFSET_X          (0)
 #define ACCEL_OFFSET_Y          (0)
 #define ACCEL_OFFSET_Z          (0)
@@ -87,6 +89,7 @@ void setup() {
     setupBNO08x();
 
     pinMode(PIN_LED, OUTPUT);
+    pinMode(VIBRATION_SENSOR_A1, INPUT);
 
     if (SD.begin(PIN_SD_SELECT)) {
         logFile = SD.open("latest.log", O_APPEND | O_CREAT | O_WRITE);
@@ -112,6 +115,11 @@ SensedData readSensors() {
 
     float pressure = bmp280.readPressure();
     float temperature = bmp280.readTemperature();
+    uint16_t vibration = analogRead(VIBRATION_SENSOR_A1);
+
+    if( vibration < 3){
+        vibration = 0;
+    }
 
     uint8_t readEventCount = 0;
 
@@ -163,6 +171,7 @@ SensedData readSensors() {
 
         temperature,
         pressure,
+        vibration,
 
         {acceleration[0], acceleration[1], acceleration[2]},
         accelerationStatus,
@@ -209,6 +218,8 @@ void loop() {
             SerialUSB.print('\t');
             SerialUSB.print(data->pressure);
             SerialUSB.print('\t');
+            SerialUSB.print(data->vibration);
+            SerialUSB.print('\t');
             SerialUSB.print(data->acceleration[0], 6);
             SerialUSB.print('\t');
             SerialUSB.print(data->acceleration[1], 6);
@@ -245,6 +256,8 @@ void loop() {
             logFile.print(data->temperature);
             logFile.print('\t');
             logFile.print(data->pressure);
+            logFile.print('\t');
+            logFile.print(data->vibration);
             logFile.print('\t');
             logFile.print(data->acceleration[0], 6);
             logFile.print('\t');
