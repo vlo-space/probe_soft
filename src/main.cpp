@@ -72,6 +72,7 @@ void setup() {
     SerialUSB.begin(115200);
 
     Serial1.begin(9600);
+    Serial.begin(9600);
 
     if (!bno08x.begin_I2C()) {
         fatalError("BNO08x init failed");
@@ -90,7 +91,7 @@ void setup() {
 
     pinMode(PIN_LED, OUTPUT);
     pinMode(VIBRATION_SENSOR_A1, INPUT);
-
+    
     if (SD.begin(PIN_SD_SELECT)) {
         logFile = SD.open("latest.log", O_APPEND | O_CREAT | O_WRITE);
         logFile.print('\n');
@@ -104,9 +105,8 @@ SensedData readSensors() {
     tone(4, 131);
     char buffer[GPS_READ_BUFFER_SIZE] = {0};
 
-    while (Serial1.available() > 0) {
-        Serial1.readBytes(buffer, GPS_READ_BUFFER_SIZE);
-
+    while (Serial.available() > 0) {
+        Serial.readBytes(buffer, GPS_READ_BUFFER_SIZE);
         for (size_t i = 0; i < GPS_READ_BUFFER_SIZE; i++) {
             if (buffer[i] == 0) break;
             gps.encode(buffer[i]);
@@ -202,8 +202,6 @@ void loop() {
 
         Frame radioBuffer[RADIO_PACKET_FRAME_COUNT] = {{0}};
         uint8_t radioBufferedCount = 0;
-
-        // radio.flush();
 
         while (!collectedData.empty()) {
             const SensedData* data = collectedData.front();
