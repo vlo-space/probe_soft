@@ -24,8 +24,6 @@
 #define SENSED_DATA_BUFFER_SIZE  3
 #define RADIO_PACKET_FRAME_COUNT 2
 
-#define VIBRATION_SENSOR_A1 A1
-
 #define ACCEL_OFFSET_X          (0)
 #define ACCEL_OFFSET_Y          (0)
 #define ACCEL_OFFSET_Z          (0)
@@ -103,7 +101,7 @@ void setup() {
     nmea_util::writeCommand(&Serial, "$PCAS03,5,0,0,0,0,0,0,0,0,0,,,0,0");
    
     pinMode(PIN_LED, OUTPUT);
-    pinMode(VIBRATION_SENSOR_A1, INPUT);
+    pinMode(PIN_VIBRATION_SENSOR, INPUT);
     
     if (SD.begin(PIN_SD_SELECT)) {
         logFile = SD.open("latest.log", O_APPEND | O_CREAT | O_WRITE);
@@ -128,7 +126,7 @@ SensedData readSensors() {
 
     float pressure = bmp280.readPressure();
     float temperature = bmp280.readTemperature();
-    uint16_t vibrations = analogRead(VIBRATION_SENSOR_A1);
+    uint16_t vibrations = analogRead(PIN_VIBRATION_SENSOR);
     uint8_t readEventCount = 0;
 
     float acceleration[3] = {NAN, NAN, NAN};
