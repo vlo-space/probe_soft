@@ -16,13 +16,13 @@
 
 #define GPS_BAUD_RATE 9600
 #define GPS_READ_BUFFER_SIZE     32
-#define GPS_WAIT_FOR_DATA_TIME   100
+#define GPS_READ_TIMEOUT         100
 #define WRITE_PERIOD             75
 #define READ_DELAY               3
 #define SENSED_DATA_BUFFER_SIZE  3
 #define RADIO_PACKET_FRAME_COUNT 2
 
-#define VIBRATIONS_SENSOR_A1 A1
+#define VIBRATION_SENSOR_A1 A1
 
 #define ACCEL_OFFSET_X          (0)
 #define ACCEL_OFFSET_Y          (0)
@@ -103,7 +103,7 @@ void setup() {
     SerialUSB.begin(115200);
 
     Serial.begin(9600);
-    Serial.setTimeout(GPS_WAIT_FOR_DATA_TIME);
+    Serial.setTimeout(GPS_READ_TIMEOUT);
 
     if (!bno08x.begin_I2C()) {
         fatalError("BNO08x init failed");
@@ -125,7 +125,7 @@ void setup() {
     SendCommandToGps("$PCAS03,5,0,0,0,0,0,0,0,0,0,,,0,0", &Serial); //Sets the time between GNSS outputs and the type of data to send 
    
     pinMode(PIN_LED, OUTPUT);
-    pinMode(VIBRATIONS_SENSOR_A1, INPUT);
+    pinMode(VIBRATION_SENSOR_A1, INPUT);
     
     if (SD.begin(PIN_SD_SELECT)) {
         logFile = SD.open("latest.log", O_APPEND | O_CREAT | O_WRITE);
@@ -150,7 +150,7 @@ SensedData readSensors() {
 
     float pressure = bmp280.readPressure();
     float temperature = bmp280.readTemperature();
-    uint16_t vibrations = analogRead(VIBRATIONS_SENSOR_A1);
+    uint16_t vibrations = analogRead(VIBRATION_SENSOR_A1);
     uint8_t readEventCount = 0;
 
     float acceleration[3] = {NAN, NAN, NAN};
