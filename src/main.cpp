@@ -14,7 +14,7 @@
 #include "data.h"
 #include "angles_util.hpp"
 
-#define GPS_BAUD_RATE 9600
+#define GPS_BAUD_RATE            9600
 #define GPS_READ_BUFFER_SIZE     32
 #define GPS_READ_TIMEOUT         100
 #define WRITE_PERIOD             75
@@ -72,9 +72,12 @@ void setupBNO08x() {
     }
 }
 
-/*calculates and writes the checkSum. 
-The chcekSum is XOR of all the bytes between the $ and the * , and written in hexadecimal.*/
-void writeCheckSum( char * command, Uart * serial ){
+/**
+ * Calculates and writes the checksum.  
+ * 
+ * The checksum is a XOR of all the bytes between the $ and the * , written in hexadecimal.
+ */
+void writeCheckSum(char* command, Uart* serial) {
     char sum = command[1];
     u_int16_t i;
     for( i=2; command[i] != '\0'; i++ ) {
@@ -84,16 +87,15 @@ void writeCheckSum( char * command, Uart * serial ){
     serial->write(hexSymbols[sum%16]);
 }
 
-void SendCommandToGps( char * command, Uart * serial ){
-    
-    uint32_t i = 0;
-     serial->write('\r');
-     serial->write('\n');
+void sendCommandToGps(char* command, Uart* serial) {
+    serial->write('\r');
+    serial->write('\n');
 
-    for( i=0; command[i] != '\0'; i++ ){
+    for (uint32_t i = 0; command[i] != '\0'; i++) {
         serial->write(command[i]);
     }
-     serial->write('*');
+
+    serial->write('*');
     writeCheckSum( command, serial);
     serial->write('\r');
     serial->write('\n');
@@ -120,9 +122,9 @@ void setup() {
 
     setupBNO08x();
    
-    SendCommandToGps("$PCAS01,115200", &Serial); //Sets the baud Rate to 115200 on GNSS serial
-    SendCommandToGps("$PCAS04,7", &Serial); //Sets the GPS + BeiDou + GLONASS mode on GNSS
-    SendCommandToGps("$PCAS03,5,0,0,0,0,0,0,0,0,0,,,0,0", &Serial); //Sets the time between GNSS outputs and the type of data to send 
+    sendCommandToGps("$PCAS01,115200", &Serial); //Sets the baud Rate to 115200 on GNSS serial
+    sendCommandToGps("$PCAS04,7", &Serial); //Sets the GPS + BeiDou + GLONASS mode on GNSS
+    sendCommandToGps("$PCAS03,5,0,0,0,0,0,0,0,0,0,,,0,0", &Serial); //Sets the time between GNSS outputs and the type of data to send 
    
     pinMode(PIN_LED, OUTPUT);
     pinMode(VIBRATION_SENSOR_A1, INPUT);
