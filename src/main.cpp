@@ -15,6 +15,7 @@
 #include "angles_util.hpp"
 #include "pcas_util.hpp"
 
+#define DEBUG_SERIAL_BAUD_RATE   115200
 #define GPS_BAUD_RATE            9600
 #define GPS_READ_BUFFER_SIZE     32
 #define GPS_READ_TIMEOUT         100
@@ -74,9 +75,9 @@ void setupBNO08x() {
 
 
 void setup() {
-    SerialUSB.begin(115200);
+    SerialUSB.begin(DEBUG_SERIAL_BAUD_RATE);
 
-    Serial.begin(9600);
+    Serial.begin(GPS_BAUD_RATE);
     Serial.setTimeout(GPS_READ_TIMEOUT);
 
     if (!bno08x.begin_I2C()) {
