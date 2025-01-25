@@ -7,8 +7,11 @@ const char HEX_SYMBOLS[16] =
 namespace nmea_util {
     void writeCheckSum(Uart* serial, const char* command) {
         char sum = command[1];
-        u_int16_t i;
-        for (i = 2; command[i] != '\0'; i++) { sum = sum ^ command[i]; }
+        
+        for (uint16_t i = 2; command[i] != '\0'; i++) { 
+            sum = sum ^ command[i]; 
+        }
+
         serial->write(HEX_SYMBOLS[sum / 16 % 16]);
         serial->write(HEX_SYMBOLS[sum % 16]);
     }
