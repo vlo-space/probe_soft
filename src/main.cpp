@@ -13,6 +13,7 @@
 #include "pins.h"
 #include "data.h"
 #include "angles_util.hpp"
+#include "pcas_util.hpp"
 
 #define GPS_BAUD_RATE            9600
 #define GPS_READ_BUFFER_SIZE     32
@@ -27,8 +28,6 @@
 #define ACCEL_OFFSET_X          (0)
 #define ACCEL_OFFSET_Y          (0)
 #define ACCEL_OFFSET_Z          (0)
-
-char const hexSymbols[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'}; //used to translate to hexadecimal
 
 #if GPS_READ_BUFFER_SIZE <= 2
     #error GPS_READ_BUFFER_SIZE must be at least 2
@@ -72,34 +71,7 @@ void setupBNO08x() {
     }
 }
 
-/**
- * Calculates and writes the checksum.  
- * 
- * The checksum is a XOR of all the bytes between the $ and the * , written in hexadecimal.
- */
-void writeCheckSum(char* command, Uart* serial) {
-    char sum = command[1];
-    u_int16_t i;
-    for( i=2; command[i] != '\0'; i++ ) {
-        sum = sum ^ command[i]; 
-    }
-    serial->write(hexSymbols[sum/16%16]);
-    serial->write(hexSymbols[sum%16]);
-}
 
-void sendCommandToGps(char* command, Uart* serial) {
-    serial->write('\r');
-    serial->write('\n');
-
-    for (uint32_t i = 0; command[i] != '\0'; i++) {
-        serial->write(command[i]);
-    }
-
-    serial->write('*');
-    writeCheckSum( command, serial);
-    serial->write('\r');
-    serial->write('\n');
-}
 
 void setup() {
     SerialUSB.begin(115200);
@@ -122,9 +94,12 @@ void setup() {
 
     setupBNO08x();
    
-    sendCommandToGps("$PCAS01,115200", &Serial); //Sets the baud Rate to 115200 on GNSS serial
-    sendCommandToGps("$PCAS04,7", &Serial); //Sets the GPS + BeiDou + GLONASS mode on GNSS
-    sendCommandToGps("$PCAS03,5,0,0,0,0,0,0,0,0,0,,,0,0", &Serial); //Sets the time between GNSS outputs and the type of data to send 
+    // Set the baud Rate to 115200 on GNSS serial
+    pcas_util::writeCommand(&Serial, "$PCAS01,115200");
+    // Set the GPS + BeiDou + GLONASS mode on GNSS
+    pcas_util::writeCommand(&Serial, "$PCAS04,7");
+    // Set the time between GNSS outputs and the type of data to send 
+    pcas_util::writeCommand(&Serial, "$PCAS03,5,0,0,0,0,0,0,0,0,0,,,0,0");
    
     pinMode(PIN_LED, OUTPUT);
     pinMode(VIBRATION_SENSOR_A1, INPUT);
