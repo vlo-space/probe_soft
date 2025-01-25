@@ -1,7 +1,7 @@
 #include "angles_util.hpp"
 
-#include <Arduino.h>
 #include <api/Common.h>
+#include <Arduino.h>
 #include <cmath>
 
 namespace angles_util {
@@ -14,10 +14,8 @@ namespace angles_util {
         float sqk = qk * qk;
 
         angles.yaw = atan2(2.0 * (qi * qj + qk * qr), (sqi - sqj - sqk + sqr));
-        angles.pitch =
-            asin(-2.0 * (qi * qk - qj * qr) / (sqi + sqj + sqk + sqr));
-        angles.roll =
-            atan2(2.0 * (qj * qk + qi * qr), (-sqi - sqj + sqk + sqr));
+        angles.pitch = asin(-2.0 * (qi * qk - qj * qr) / (sqi + sqj + sqk + sqr));
+        angles.roll = atan2(2.0 * (qj * qk + qi * qr), (-sqi - sqj + sqk + sqr));
 
         return angles;
     }

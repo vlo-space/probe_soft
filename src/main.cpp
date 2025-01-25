@@ -10,8 +10,8 @@
 #include <CanSatKitRadio.h>
 #include <SD.h>
 #include <SPI.h>
-#include <TinyGPS++.h>
 #include <squeue.hpp>
+#include <TinyGPS++.h>
 
 #define DEBUG_SERIAL_BAUD_RATE   115200
 #define GPS_BAUD_RATE            9600
@@ -27,7 +27,7 @@
 #define ACCEL_OFFSET_Z (0)
 
 #if GPS_READ_BUFFER_SIZE <= 2
-#error GPS_READ_BUFFER_SIZE must be at least 2
+    #error GPS_READ_BUFFER_SIZE must be at least 2
 #endif
 
 SQueue<SensedData, SENSED_DATA_BUFFER_SIZE> collectedData;
@@ -37,10 +37,11 @@ TinyGPSPlus gps;
 Adafruit_BNO08x bno08x(-1);
 Adafruit_BMP280 bmp280;
 
-CanSatKit::Radio radio(CanSatKit::Pins::Radio::ChipSelect,
-                       CanSatKit::Pins::Radio::DIO0, 433.0,
-                       CanSatKit::Bandwidth_500000_Hz,
-                       CanSatKit::SpreadingFactor_7, CanSatKit::CodingRate_4_8);
+CanSatKit::Radio radio(
+    CanSatKit::Pins::Radio::ChipSelect, CanSatKit::Pins::Radio::DIO0, 433.0,
+    CanSatKit::Bandwidth_500000_Hz, CanSatKit::SpreadingFactor_7,
+    CanSatKit::CodingRate_4_8
+);
 
 uint32_t sensedDataIndex = 0;
 
@@ -135,52 +136,55 @@ SensedData readSensors() {
     sh2_SensorValue sensorData;
     while (readEventCount < 5 && bno08x.getSensorEvent(&sensorData)) {
         switch (sensorData.sensorId) {
-        case SH2_ACCELEROMETER:
-            accelerationStatus = sensorData.status & 0b11;
-            acceleration[0] = sensorData.un.accelerometer.x - ACCEL_OFFSET_X;
-            acceleration[1] = sensorData.un.accelerometer.y - ACCEL_OFFSET_Y;
-            acceleration[2] = sensorData.un.accelerometer.z - ACCEL_OFFSET_Z;
-            break;
+            case SH2_ACCELEROMETER:
+                accelerationStatus = sensorData.status & 0b11;
+                acceleration[0] = sensorData.un.accelerometer.x - ACCEL_OFFSET_X;
+                acceleration[1] = sensorData.un.accelerometer.y - ACCEL_OFFSET_Y;
+                acceleration[2] = sensorData.un.accelerometer.z - ACCEL_OFFSET_Z;
+                break;
 
-        case SH2_ARVR_STABILIZED_RV: {
-            gyroscopeStatus = sensorData.status & 0b11;
-            angles_util::Euler angles = angles_util::quaternionToEuler(
-                sensorData.un.arvrStabilizedRV.real,
-                sensorData.un.arvrStabilizedRV.i,
-                sensorData.un.arvrStabilizedRV.j,
-                sensorData.un.arvrStabilizedRV.k);
+            case SH2_ARVR_STABILIZED_RV: {
+                gyroscopeStatus = sensorData.status & 0b11;
+                angles_util::Euler angles = angles_util::quaternionToEuler(
+                    sensorData.un.arvrStabilizedRV.real,
+                    sensorData.un.arvrStabilizedRV.i,
+                    sensorData.un.arvrStabilizedRV.j,
+                    sensorData.un.arvrStabilizedRV.k
+                );
 
-            gyroscope[0] = angles.roll;
-            gyroscope[1] = angles.pitch;
-            gyroscope[2] = angles.yaw;
-            break;
-        }
+                gyroscope[0] = angles.roll;
+                gyroscope[1] = angles.pitch;
+                gyroscope[2] = angles.yaw;
+                break;
+            }
 
-        default: break;
+            default: break;
         }
 
         readEventCount++;
     }
 
-    return {sensedDataIndex++,
+    return {
+        sensedDataIndex++,
 
-            millis(),
-            (uint16_t) (micros() % 1000),
+        millis(),
+        (uint16_t) (micros() % 1000),
 
-            temperature,
-            pressure,
-            vibrations,
+        temperature,
+        pressure,
+        vibrations,
 
-            {acceleration[0], acceleration[1], acceleration[2]},
-            accelerationStatus,
-            {gyroscope[0], gyroscope[1], gyroscope[2]},
-            gyroscopeStatus,
+        {acceleration[0], acceleration[1], acceleration[2]},
+        accelerationStatus,
+        {gyroscope[0],    gyroscope[1],    gyroscope[2]   },
+        gyroscopeStatus,
 
-            gps.time.value(),
-            gps.date.value(),
-            (gps.location.isValid()) ? gps.location.lat() : NAN,
-            (gps.location.isValid()) ? gps.location.lng() : NAN,
-            gps.altitude.meters()};
+        gps.time.value(),
+        gps.date.value(),
+        (gps.location.isValid()) ? gps.location.lat() : NAN,
+        (gps.location.isValid()) ? gps.location.lng() : NAN,
+        gps.altitude.meters()
+    };
 }
 
 void loop() {
@@ -277,11 +281,10 @@ void loop() {
             logFile.print(data->gpsAltitude, 6);
             logFile.println();
 
-            radioBuffer[radioBufferedCount] =
-                (Frame) {.signature = {'V', 'L', 'O'}};
-            memcpy(&radioBuffer[radioBufferedCount].data,
-                   data,
-                   sizeof(SensedData));
+            radioBuffer[radioBufferedCount] = (Frame) {
+                .signature = {'V', 'L', 'O'}
+            };
+            memcpy(&radioBuffer[radioBufferedCount].data, data, sizeof(SensedData));
 
             if (++radioBufferedCount >= RADIO_PACKET_FRAME_COUNT) {
                 radio.transmit((uint8_t*) &radioBuffer, sizeof(radioBuffer));
