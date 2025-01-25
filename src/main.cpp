@@ -16,14 +16,19 @@
 
 #define GPS_BAUD_RATE 9600
 #define GPS_READ_BUFFER_SIZE     32
+#define GPS_WAIT_FOR_DATA_TIME   100
 #define WRITE_PERIOD             75
 #define READ_DELAY               3
 #define SENSED_DATA_BUFFER_SIZE  3
 #define RADIO_PACKET_FRAME_COUNT 2
 
+#define VIBRATIONS_SENSOR_A1 A1
+
 #define ACCEL_OFFSET_X          (0)
 #define ACCEL_OFFSET_Y          (0)
 #define ACCEL_OFFSET_Z          (0)
+
+char const hexSymbols[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'}; //used to translate to hexadecimal
 
 #if GPS_READ_BUFFER_SIZE <= 2
     #error GPS_READ_BUFFER_SIZE must be at least 2
@@ -67,10 +72,38 @@ void setupBNO08x() {
     }
 }
 
+/*calculates and writes the checkSum. 
+The chcekSum is XOR of all the bytes between the $ and the * , and written in hexadecimal.*/
+void writeCheckSum( char * command, Uart * serial ){
+    char sum = command[1];
+    u_int16_t i;
+    for( i=2; command[i] != '\0'; i++ ) {
+        sum = sum ^ command[i]; 
+    }
+    serial->write(hexSymbols[sum/16%16]);
+    serial->write(hexSymbols[sum%16]);
+}
+
+void SendCommandToGps( char * command, Uart * serial ){
+    
+    uint32_t i = 0;
+     serial->write('\r');
+     serial->write('\n');
+
+    for( i=0; command[i] != '\0'; i++ ){
+        serial->write(command[i]);
+    }
+     serial->write('*');
+    writeCheckSum( command, serial);
+    serial->write('\r');
+    serial->write('\n');
+}
+
 void setup() {
     SerialUSB.begin(115200);
 
-    Serial1.begin(9600);
+    Serial.begin(9600);
+    Serial.setTimeout(GPS_WAIT_FOR_DATA_TIME);
 
     if (!bno08x.begin_I2C()) {
         fatalError("BNO08x init failed");
@@ -86,9 +119,14 @@ void setup() {
     radio.disable_debug();
 
     setupBNO08x();
-
+   
+    SendCommandToGps("$PCAS01,115200", &Serial); //Sets the baud Rate to 115200 on GNSS serial
+    SendCommandToGps("$PCAS04,7", &Serial); //Sets the GPS + BeiDou + GLONASS mode on GNSS
+    SendCommandToGps("$PCAS03,5,0,0,0,0,0,0,0,0,0,,,0,0", &Serial); //Sets the time between GNSS outputs and the type of data to send 
+   
     pinMode(PIN_LED, OUTPUT);
-
+    pinMode(VIBRATIONS_SENSOR_A1, INPUT);
+    
     if (SD.begin(PIN_SD_SELECT)) {
         logFile = SD.open("latest.log", O_APPEND | O_CREAT | O_WRITE);
         logFile.print('\n');
@@ -102,9 +140,8 @@ SensedData readSensors() {
     tone(4, 131);
     char buffer[GPS_READ_BUFFER_SIZE] = {0};
 
-    while (Serial1.available() > 0) {
-        Serial1.readBytes(buffer, GPS_READ_BUFFER_SIZE);
-
+    while (Serial.available() > 0) {
+        Serial.readBytes(buffer, GPS_READ_BUFFER_SIZE);
         for (size_t i = 0; i < GPS_READ_BUFFER_SIZE; i++) {
             if (buffer[i] == 0) break;
             gps.encode(buffer[i]);
@@ -113,7 +150,7 @@ SensedData readSensors() {
 
     float pressure = bmp280.readPressure();
     float temperature = bmp280.readTemperature();
-
+    uint16_t vibrations = analogRead(VIBRATIONS_SENSOR_A1);
     uint8_t readEventCount = 0;
 
     float acceleration[3] = {NAN, NAN, NAN};
@@ -164,6 +201,7 @@ SensedData readSensors() {
 
         temperature,
         pressure,
+        vibrations,
 
         {acceleration[0], acceleration[1], acceleration[2]},
         accelerationStatus,
@@ -203,6 +241,8 @@ void loop() {
             SerialUSB.print('\t');
             SerialUSB.print(data->pressure);
             SerialUSB.print('\t');
+            SerialUSB.print(data->vibrations);
+            SerialUSB.print('\t');
             SerialUSB.print(data->acceleration[0], 6);
             SerialUSB.print('\t');
             SerialUSB.print(data->acceleration[1], 6);
@@ -239,6 +279,8 @@ void loop() {
             logFile.print(data->temperature);
             logFile.print('\t');
             logFile.print(data->pressure);
+            logFile.print('\t');
+            logFile.print(data->vibrations);
             logFile.print('\t');
             logFile.print(data->acceleration[0], 6);
             logFile.print('\t');
