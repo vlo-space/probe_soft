@@ -3,7 +3,7 @@
 
 #include <Uart.h>
 
-namespace pcas_util {
+namespace nmea_util {
 
     /**
      * Calculates and writes the checksum.  

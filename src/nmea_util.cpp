@@ -1,9 +1,9 @@
-#include "pcas_util.hpp"
+#include "nmea_util.hpp"
 
 // used to translate to hexadecimal
 const char HEX_SYMBOLS[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
-namespace pcas_util {
+namespace nmea_util {
     void writeCheckSum(Uart* serial, const char* command) {
         char sum = command[1];
         u_int16_t i;

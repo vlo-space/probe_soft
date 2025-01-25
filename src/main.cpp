@@ -13,7 +13,7 @@
 #include "pins.h"
 #include "data.h"
 #include "angles_util.hpp"
-#include "pcas_util.hpp"
+#include "nmea_util.hpp"
 
 #define DEBUG_SERIAL_BAUD_RATE   115200
 #define GPS_BAUD_RATE            9600
@@ -96,11 +96,11 @@ void setup() {
     setupBNO08x();
    
     // Set the baud Rate to 115200 on GNSS serial
-    pcas_util::writeCommand(&Serial, "$PCAS01,115200");
+    nmea_util::writeCommand(&Serial, "$PCAS01,115200");
     // Set the GPS + BeiDou + GLONASS mode on GNSS
-    pcas_util::writeCommand(&Serial, "$PCAS04,7");
+    nmea_util::writeCommand(&Serial, "$PCAS04,7");
     // Set the time between GNSS outputs and the type of data to send 
-    pcas_util::writeCommand(&Serial, "$PCAS03,5,0,0,0,0,0,0,0,0,0,,,0,0");
+    nmea_util::writeCommand(&Serial, "$PCAS03,5,0,0,0,0,0,0,0,0,0,,,0,0");
    
     pinMode(PIN_LED, OUTPUT);
     pinMode(VIBRATION_SENSOR_A1, INPUT);
