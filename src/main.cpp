@@ -138,9 +138,12 @@ SensedData readSensors() {
         switch (sensorData.sensorId) {
             case SH2_LINEAR_ACCELERATION:
                 accelerationStatus = sensorData.status & 0b11;
-                acceleration[0] = sensorData.un.linearAcceleration.x - ACCEL_OFFSET_X;
-                acceleration[1] = sensorData.un.linearAcceleration.y - ACCEL_OFFSET_Y;
-                acceleration[2] = sensorData.un.linearAcceleration.z - ACCEL_OFFSET_Z;
+                acceleration[0] =
+                    sensorData.un.linearAcceleration.x - ACCEL_OFFSET_X;
+                acceleration[1] =
+                    sensorData.un.linearAcceleration.y - ACCEL_OFFSET_Y;
+                acceleration[2] =
+                    sensorData.un.linearAcceleration.z - ACCEL_OFFSET_Z;
                 break;
 
             case SH2_ARVR_STABILIZED_RV: {
