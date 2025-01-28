@@ -59,7 +59,7 @@ void fatalError(const char* error) {
 }
 
 void setupBNO08x() {
-    if (!bno08x.enableReport(SH2_ACCELEROMETER, 10000)) {
+    if (!bno08x.enableReport(SH2_LINEAR_ACCELERATION, 100)) {
         fatalError("BNO08x accelerometer init failed");
     }
     if (!bno08x.enableReport(SH2_ARVR_STABILIZED_RV, 5000)) {
@@ -136,11 +136,11 @@ SensedData readSensors() {
     sh2_SensorValue sensorData;
     while (readEventCount < 5 && bno08x.getSensorEvent(&sensorData)) {
         switch (sensorData.sensorId) {
-            case SH2_ACCELEROMETER:
+            case SH2_LINEAR_ACCELERATION:
                 accelerationStatus = sensorData.status & 0b11;
-                acceleration[0] = sensorData.un.accelerometer.x - ACCEL_OFFSET_X;
-                acceleration[1] = sensorData.un.accelerometer.y - ACCEL_OFFSET_Y;
-                acceleration[2] = sensorData.un.accelerometer.z - ACCEL_OFFSET_Z;
+                acceleration[0] = sensorData.un.linearAcceleration.x - ACCEL_OFFSET_X;
+                acceleration[1] = sensorData.un.linearAcceleration.y - ACCEL_OFFSET_Y;
+                acceleration[2] = sensorData.un.linearAcceleration.z - ACCEL_OFFSET_Z;
                 break;
 
             case SH2_ARVR_STABILIZED_RV: {
