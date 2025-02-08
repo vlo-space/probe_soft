@@ -12,6 +12,7 @@
 #include <SPI.h>
 #include <squeue.hpp>
 #include <TinyGPS++.h>
+#include <ace_crc/crc32_nibble.hpp>
 
 #define DEBUG_SERIAL_BAUD_RATE   115200
 #define GPS_BAUD_RATE            9600
@@ -285,7 +286,9 @@ void loop() {
             logFile.println();
 
             radioBuffer[radioBufferedCount] = (Frame) {
-                .signature = {'V', 'L', 'O'}
+                .signature = {'V', 'L', 'O'},
+                .data = {0},
+                .checksum = ace_crc::crc32_nibble::crc_calculate(data, sizeof(SensedData))
             };
             memcpy(&radioBuffer[radioBufferedCount].data, data, sizeof(SensedData));
 

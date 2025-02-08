@@ -28,6 +28,7 @@ struct SensedData {
 struct __attribute__((packed)) Frame {
     char signature[3];
     SensedData data;
+    uint32_t checksum;
 };
 
 #endif
