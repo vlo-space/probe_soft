@@ -99,7 +99,8 @@ void setup() {
     nmea_util::writeCommand(&Serial, "$PAIR062,1,0");
     nmea_util::writeCommand(&Serial, "$PAIR062,2,0");
     nmea_util::writeCommand(&Serial, "$PAIR062,3,0");
-    nmea_util::writeCommand(&Serial, "$PAIR062,4,0");;
+    nmea_util::writeCommand(&Serial, "$PAIR062,4,0");
+    ;
 
     pinMode(PIN_LED, OUTPUT);
     pinMode(PIN_VIBRATION_SENSOR, INPUT);
