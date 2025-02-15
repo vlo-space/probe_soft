@@ -15,7 +15,7 @@
 #include <TinyGPS++.h>
 
 #define DEBUG_SERIAL_BAUD_RATE   115200
-#define GPS_BAUD_RATE            9600
+#define GPS_BAUD_RATE            115200
 #define GPS_READ_BUFFER_SIZE     32
 #define GPS_READ_TIMEOUT         100
 #define WRITE_PERIOD             75
@@ -90,11 +90,16 @@ void setup() {
     setupBNO08x();
 
     // Set the baud Rate to 115200 on GNSS serial
-    nmea_util::writeCommand(&Serial, "$PCAS01,115200");
+    nmea_util::writeCommand(&Serial, "$PAIR864,0,0,115200");
     // Set the GPS + BeiDou + GLONASS mode on GNSS
-    nmea_util::writeCommand(&Serial, "$PCAS04,7");
+    nmea_util::writeCommand(&Serial, "$PAIR066,1,1,1,0,0,0");
     // Set the time between GNSS outputs and the type of data to send
-    nmea_util::writeCommand(&Serial, "$PCAS03,5,0,0,0,0,0,0,0,0,0,,,0,0");
+    nmea_util::writeCommand(&Serial, "$PAIR062,5,0");
+    nmea_util::writeCommand(&Serial, "$PAIR062,0,5");
+    nmea_util::writeCommand(&Serial, "$PAIR062,1,0");
+    nmea_util::writeCommand(&Serial, "$PAIR062,2,0");
+    nmea_util::writeCommand(&Serial, "$PAIR062,3,0");
+    nmea_util::writeCommand(&Serial, "$PAIR062,4,0");;
 
     pinMode(PIN_LED, OUTPUT);
     pinMode(PIN_VIBRATION_SENSOR, INPUT);
