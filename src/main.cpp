@@ -100,7 +100,6 @@ void setup() {
     nmea_util::writeCommand(&Serial, "$PAIR062,2,0");
     nmea_util::writeCommand(&Serial, "$PAIR062,3,0");
     nmea_util::writeCommand(&Serial, "$PAIR062,4,0");
-    ;
 
     pinMode(PIN_LED, OUTPUT);
     pinMode(PIN_VIBRATION_SENSOR, INPUT);
@@ -114,7 +113,6 @@ void setup() {
 }
 
 SensedData readSensors() {
-    tone(4, 131);
     char buffer[GPS_READ_BUFFER_SIZE] = {0};
 
     while (Serial.available() > 0) {
@@ -129,6 +127,7 @@ SensedData readSensors() {
     float pressure = bmp280.readPressure();
     float temperature = bmp280.readTemperature();
     uint16_t vibrations = analogRead(PIN_VIBRATION_SENSOR);
+    uint32_t altitude = bmp280.readAltitude();
     uint8_t readEventCount = 0;
 
     float acceleration[3] = {NAN, NAN, NAN};
@@ -183,6 +182,7 @@ SensedData readSensors() {
         temperature,
         pressure,
         vibrations,
+        altitude,
 
         {acceleration[0], acceleration[1], acceleration[2]},
         accelerationStatus,
@@ -190,7 +190,6 @@ SensedData readSensors() {
         gyroscopeStatus,
 
         gps.time.value(),
-        gps.date.value(),
         (gps.location.isValid()) ? gps.location.lat() : NAN,
         (gps.location.isValid()) ? gps.location.lng() : NAN,
         gps.altitude.meters()
@@ -241,7 +240,7 @@ void loop() {
             SerialUSB.print('\t');
             SerialUSB.print(data->gyroscopeStatus);
             SerialUSB.print('\t');
-            SerialUSB.print(data->gpsDate);
+            SerialUSB.print(data->altitude); 
             SerialUSB.print('\t');
             SerialUSB.print(data->gpsTime);
             SerialUSB.print('\t');
@@ -280,7 +279,7 @@ void loop() {
             logFile.print('\t');
             logFile.print(data->gyroscopeStatus);
             logFile.print('\t');
-            logFile.print(data->gpsDate);
+            logFile.print(data->altitude);
             logFile.print('\t');
             logFile.print(data->gpsTime);
             logFile.print('\t');

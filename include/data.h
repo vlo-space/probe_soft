@@ -12,6 +12,7 @@ struct SensedData {
     float temperature;
     float pressure;
     uint16_t vibrations;
+    uint32_t altitude;
 
     float acceleration[3];
     uint8_t accelerationStatus;
@@ -19,7 +20,6 @@ struct SensedData {
     uint8_t gyroscopeStatus;
 
     uint32_t gpsTime;
-    uint32_t gpsDate;
     double gpsLatitude;
     double gpsLongitude;
     double gpsAltitude;
