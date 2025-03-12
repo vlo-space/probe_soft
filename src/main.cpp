@@ -240,7 +240,7 @@ void loop() {
             SerialUSB.print('\t');
             SerialUSB.print(data->gyroscopeStatus);
             SerialUSB.print('\t');
-            SerialUSB.print(data->altitude); 
+            SerialUSB.print(data->altitude);
             SerialUSB.print('\t');
             SerialUSB.print(data->gpsTime);
             SerialUSB.print('\t');
