@@ -2,8 +2,9 @@
 #define H_CANSAT_SENSORS
 
 #include <cstdint>
+#include <Arduino.h>
 
-struct SensedData {
+struct __attribute__((packed)) SensedData {
     uint32_t index;
 
     uint32_t uptime;
@@ -12,7 +13,6 @@ struct SensedData {
     float temperature;
     float pressure;
     uint16_t vibrations;
-    uint32_t altitude;
 
     float acceleration[3];
     uint8_t accelerationStatus;
@@ -22,7 +22,8 @@ struct SensedData {
     uint32_t gpsTime;
     double gpsLatitude;
     double gpsLongitude;
-    double gpsAltitude;
+
+    double altitude;
 
     void print(Print* output) const {
         output->print(this->index);
@@ -53,15 +54,13 @@ struct SensedData {
         output->print('\t');
         output->print(this->gyroscopeStatus);
         output->print('\t');
-        output->print(this->altitude);
-        output->print('\t');
         output->print(this->gpsTime);
         output->print('\t');
         output->print(this->gpsLatitude, 6);
         output->print('\t');
         output->print(this->gpsLongitude, 6);
         output->print('\t');
-        output->print(this->gpsAltitude, 6);
+        output->print(this->altitude, 6);
         output->println();
     }
 };
@@ -71,5 +70,7 @@ struct __attribute__((packed)) Frame {
     SensedData data;
     uint32_t checksum;
 };
+
+static_assert (sizeof(Frame) < 85, "Radio frame too big");
 
 #endif
