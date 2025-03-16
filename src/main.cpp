@@ -127,7 +127,6 @@ void setup() {
     nmea_util::writeCommand(&Serial, "$PAIR062,4,0");
 
     pinMode(PIN_LED, OUTPUT);
-    pinMode(PIN_VIBRATION_SENSOR, INPUT);
 
     if (SD.begin(PIN_SD_SELECT)) {
         logFile = SD.open("latest.log", O_APPEND | O_CREAT | O_WRITE);
@@ -151,7 +150,6 @@ SensedData readSensors() {
 
     float pressure = bmp280.readPressure();
     float temperature = bmp280.readTemperature();
-    uint16_t vibrations = analogRead(PIN_VIBRATION_SENSOR);
     uint8_t readEventCount = 0;
 
     float acceleration[3] = {NAN, NAN, NAN};
@@ -205,7 +203,6 @@ SensedData readSensors() {
 
         temperature,
         pressure,
-        vibrations,
 
         {acceleration[0], acceleration[1], acceleration[2]},
         accelerationStatus,
