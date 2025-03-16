@@ -1,5 +1,6 @@
 #include "angles_util.hpp"
 #include "data.h"
+#include "data_collector.hpp"
 #include "nmea_util.hpp"
 #include "pins.h"
 
@@ -10,6 +11,7 @@
 #include <CanSatKit.h>
 #include <CanSatKitRadio.h>
 #include <SD.h>
+#include <Servo.h>
 #include <SPI.h>
 #include <squeue.hpp>
 #include <TinyGPS++.h>
@@ -22,6 +24,14 @@
 #define READ_DELAY               3
 #define SENSED_DATA_BUFFER_SIZE  3
 #define RADIO_PACKET_FRAME_COUNT 2
+
+#define SERVO_ROTATION_TIME 6800
+#define SERVO_MICROSECONDS  1600
+
+#define ALTITUDE_DELTA_SAMPLE_TIME 3000
+#define LANDING_ACTIVATION_SPEED   -5.0
+
+#define SEA_LEVEL_PRESSURE 1013.25F
 
 #define ACCEL_OFFSET_X (0)
 #define ACCEL_OFFSET_Y (0)
@@ -38,6 +48,8 @@ TinyGPSPlus gps;
 Adafruit_BNO08x bno08x(-1);
 Adafruit_BMP280 bmp280;
 
+Servo landingServo;
+
 CanSatKit::Radio radio(
     CanSatKit::Pins::Radio::ChipSelect, CanSatKit::Pins::Radio::DIO0, 433.0,
     CanSatKit::Bandwidth_500000_Hz, CanSatKit::SpreadingFactor_7,
@@ -47,6 +59,13 @@ CanSatKit::Radio radio(
 uint32_t sensedDataIndex = 0;
 
 uint32_t lastWrite = 0;
+uint32_t servoRotationStart = 0;
+
+float lastAltitude = 0;
+uint32_t lastAltitudeRead = 0;
+DataCollector altitude;
+
+bool landingStandDeployed = false;
 
 void fatalError(const char* error) {
     while (true) {
@@ -66,6 +85,12 @@ void setupBNO08x() {
     if (!bno08x.enableReport(SH2_ARVR_STABILIZED_RV, 5000)) {
         fatalError("BNO08x gyroscope init failed");
     }
+}
+
+void startServoRotation() {
+    landingServo.attach(PIN_SERVO);
+    landingServo.writeMicroseconds(SERVO_MICROSECONDS);
+    servoRotationStart = millis();
 }
 
 void setup() {
@@ -198,6 +223,25 @@ void loop() {
 
     collectedData.push(readSensors());
     delay(READ_DELAY);
+
+    altitude.addReading(bmp280.readAltitude(SEA_LEVEL_PRESSURE), micros());
+
+    if (altitude.timeSum() >= ALTITUDE_DELTA_SAMPLE_TIME * 1000) {
+        double speed = altitude.averageSpeed() * 1000000.0;
+
+        altitude = DataCollector();
+
+        if (speed < LANDING_ACTIVATION_SPEED && !landingStandDeployed) {
+            startServoRotation();
+            landingStandDeployed = true;
+        }
+    }
+
+    if (servoRotationStart != 0 &&
+        millis() - servoRotationStart >= SERVO_ROTATION_TIME) {
+        landingServo.detach();
+        servoRotationStart = 0;
+    }
 
     if (collectedData.size() == SENSED_DATA_BUFFER_SIZE ||
         millis() - lastWrite >= WRITE_PERIOD) {
