@@ -1,8 +1,8 @@
 #ifndef H_CANSAT_SENSORS
 #define H_CANSAT_SENSORS
 
-#include <cstdint>
 #include <Arduino.h>
+#include <cstdint>
 
 struct __attribute__((packed)) SensedData {
     uint32_t index;
@@ -71,6 +71,6 @@ struct __attribute__((packed)) Frame {
     uint32_t checksum;
 };
 
-static_assert (sizeof(Frame) < 85, "Radio frame too big");
+static_assert(sizeof(Frame) < 85, "Radio frame too big");
 
 #endif
