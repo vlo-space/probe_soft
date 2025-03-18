@@ -29,7 +29,7 @@
 #define SERVO_MICROSECONDS  1600
 
 #define ALTITUDE_DELTA_SAMPLE_TIME 3000
-#define LANDING_ACTIVATION_SPEED   -5.0
+#define LANDING_ACTIVATION_SPEED   -3.0
 
 #define SEA_LEVEL_PRESSURE 1013.25F
 
@@ -151,7 +151,6 @@ SensedData readSensors() {
 
     float pressure = bmp280.readPressure();
     float temperature = bmp280.readTemperature();
-    uint16_t vibrations = analogRead(PIN_VIBRATION_SENSOR);
     uint8_t readEventCount = 0;
 
     float acceleration[3] = {NAN, NAN, NAN};
@@ -205,7 +204,6 @@ SensedData readSensors() {
 
         temperature,
         pressure,
-        vibrations,
 
         {acceleration[0], acceleration[1], acceleration[2]},
         accelerationStatus,
@@ -215,7 +213,7 @@ SensedData readSensors() {
         gps.time.value(),
         (gps.location.isValid()) ? gps.location.lat() : NAN,
         (gps.location.isValid()) ? gps.location.lng() : NAN,
-        gps.altitude.meters()
+        bmp280.readAltitude()
     };
 }
 

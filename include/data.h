@@ -12,7 +12,6 @@ struct __attribute__((packed)) SensedData {
 
     float temperature;
     float pressure;
-    uint16_t vibrations;
 
     float acceleration[3];
     uint8_t accelerationStatus;
@@ -35,8 +34,6 @@ struct __attribute__((packed)) SensedData {
         output->print(this->temperature);
         output->print('\t');
         output->print(this->pressure);
-        output->print('\t');
-        output->print(this->vibrations);
         output->print('\t');
         output->print(this->acceleration[0], 6);
         output->print('\t');
