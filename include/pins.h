@@ -6,3 +6,5 @@
 #define PIN_GPS_RX 1
 
 #define PIN_SERVO 5
+
+#define PIN_BNO_RESET 4

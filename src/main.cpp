@@ -45,7 +45,7 @@ SQueue<SensedData, SENSED_DATA_BUFFER_SIZE> collectedData;
 SDLib::File logFile;
 
 TinyGPSPlus gps;
-Adafruit_BNO08x bno08x(-1);
+Adafruit_BNO08x bno08x(PIN_BNO_RESET);
 Adafruit_BMP280 bmp280;
 
 Servo landingServo;
@@ -99,8 +99,14 @@ void setup() {
     Serial.begin(GPS_BAUD_RATE);
     Serial.setTimeout(GPS_READ_TIMEOUT);
 
-    if (!bno08x.begin_I2C()) {
-        fatalError("BNO08x init failed");
+    while (!bno08x.begin_I2C()) {
+        // If the board is restarted without losing power,
+        // the BNO08x sensor will not accept an I2C connection.
+        // Forcing a restart on the BNO08x fixes the issue.
+        bno08x.hardwareReset();
+
+        // Wait for the BNO08x to initialize.
+        delay(280);
     }
 
     if (!bmp280.begin(0x76)) {
