@@ -189,9 +189,9 @@ SensedData readSensors() {
                     sensorData.un.arvrStabilizedRV.k
                 );
 
-                gyroscope[0] = angles.roll;
-                gyroscope[1] = angles.pitch;
-                gyroscope[2] = angles.yaw;
+                gyroscope[0] = angles.pitch;
+                gyroscope[1] = angles.yaw;
+                gyroscope[2] = angles.roll;
                 break;
             }
 
