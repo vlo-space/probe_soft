@@ -180,18 +180,12 @@ SensedData readSensors() {
                     sensorData.un.linearAcceleration.z - ACCEL_OFFSET_Z;
                 break;
 
-            case SH2_ARVR_STABILIZED_RV: {
+            case SH2_GYROSCOPE_CALIBRATED: {
                 gyroscopeStatus = sensorData.status & 0b11;
-                angles_util::Euler angles = angles_util::quaternionToEuler(
-                    sensorData.un.arvrStabilizedRV.real,
-                    sensorData.un.arvrStabilizedRV.i,
-                    sensorData.un.arvrStabilizedRV.j,
-                    sensorData.un.arvrStabilizedRV.k
-                );
-
-                gyroscope[0] = angles.pitch;
-                gyroscope[1] = angles.yaw;
-                gyroscope[2] = angles.roll;
+                  
+                gyroscope[0] = sensorData.un.gyroscope.x;
+                gyroscope[1] = sensorData.un.gyroscope.y;
+                gyroscope[2] = sensorData.un.gyroscope.z;
                 break;
             }
 
