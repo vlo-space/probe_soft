@@ -82,7 +82,7 @@ void setupBNO08x() {
     if (!bno08x.enableReport(SH2_LINEAR_ACCELERATION, 100)) {
         fatalError("BNO08x accelerometer init failed");
     }
-    if (!bno08x.enableReport(SH2_ARVR_STABILIZED_RV, 5000)) {
+    if (!bno08x.enableReport(SH2_GYRO_INTEGRATED_RV, 5000)) {
         fatalError("BNO08x gyroscope init failed");
     }
 }
@@ -180,12 +180,18 @@ SensedData readSensors() {
                     sensorData.un.linearAcceleration.z - ACCEL_OFFSET_Z;
                 break;
 
-            case SH2_GYROSCOPE_CALIBRATED: {
+            case SH2_GYRO_INTEGRATED_RV: {
                 gyroscopeStatus = sensorData.status & 0b11;
 
-                gyroscope[0] = sensorData.un.gyroscope.x;
-                gyroscope[1] = sensorData.un.gyroscope.y;
-                gyroscope[2] = sensorData.un.gyroscope.z;
+                angles_util::Euler euler = angles_util::quaternionToEuler(
+                    sensorData.un.gyroIntegratedRV.real,
+                    sensorData.un.gyroIntegratedRV.i,
+                    sensorData.un.gyroIntegratedRV.j,
+                    sensorData.un.gyroIntegratedRV.k);
+
+                gyroscope[0] = euler.pitch;
+                gyroscope[1] = euler.yaw;
+                gyroscope[2] = euler.roll;                    
                 break;
             }
 
