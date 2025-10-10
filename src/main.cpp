@@ -182,7 +182,7 @@ SensedData readSensors() {
 
             case SH2_GYROSCOPE_CALIBRATED: {
                 gyroscopeStatus = sensorData.status & 0b11;
-                  
+
                 gyroscope[0] = sensorData.un.gyroscope.x;
                 gyroscope[1] = sensorData.un.gyroscope.y;
                 gyroscope[2] = sensorData.un.gyroscope.z;
