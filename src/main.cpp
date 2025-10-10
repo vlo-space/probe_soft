@@ -187,11 +187,12 @@ SensedData readSensors() {
                     sensorData.un.gyroIntegratedRV.real,
                     sensorData.un.gyroIntegratedRV.i,
                     sensorData.un.gyroIntegratedRV.j,
-                    sensorData.un.gyroIntegratedRV.k);
+                    sensorData.un.gyroIntegratedRV.k
+                );
 
                 gyroscope[0] = euler.pitch;
                 gyroscope[1] = euler.yaw;
-                gyroscope[2] = euler.roll;                    
+                gyroscope[2] = euler.roll;
                 break;
             }
 
