@@ -15,7 +15,7 @@ struct __attribute__((packed)) SensedData {
 
     float acceleration[3];
     uint8_t accelerationStatus;
-    float gyroscope[3];
+    float gyroscope[4];
     uint8_t gyroscopeStatus;
 
     uint32_t gpsTime;
@@ -48,6 +48,8 @@ struct __attribute__((packed)) SensedData {
         output->print(this->gyroscope[1], 6);
         output->print('\t');
         output->print(this->gyroscope[2], 6);
+        output->print('\t');
+        output->print(this->gyroscope[3], 6);
         output->print('\t');
         output->print(this->gyroscopeStatus);
         output->print('\t');

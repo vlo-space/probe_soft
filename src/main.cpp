@@ -85,6 +85,10 @@ void setupBNO08x() {
     if (!bno08x.enableReport(SH2_ARVR_STABILIZED_RV, 5000)) {
         fatalError("BNO08x gyroscope init failed");
     }
+
+    if (!bno08x.enableReport(SH2_GAME_ROTATION_VECTOR, 5000)) {
+        fatalError("BNO08x gyroscope init failed");
+    }
 }
 
 void startServoRotation() {
@@ -160,7 +164,7 @@ SensedData readSensors() {
 
     float acceleration[3] = {NAN, NAN, NAN};
     uint8_t accelerationStatus = 0;
-    float gyroscope[3] = {NAN, NAN, NAN};
+    float gyroscope[4] = {NAN, NAN, NAN, NAN};
     uint8_t gyroscopeStatus = 0;
 
     if (bno08x.wasReset()) {
@@ -180,19 +184,12 @@ SensedData readSensors() {
                     sensorData.un.linearAcceleration.z - ACCEL_OFFSET_Z;
                 break;
 
-            case SH2_ARVR_STABILIZED_RV: {
+            case SH2_GAME_ROTATION_VECTOR: {
                 gyroscopeStatus = sensorData.status & 0b11;
-                angles_util::Euler angles = angles_util::quaternionToEuler(
-                    sensorData.un.arvrStabilizedRV.real,
-                    sensorData.un.arvrStabilizedRV.i,
-                    sensorData.un.arvrStabilizedRV.j,
-                    sensorData.un.arvrStabilizedRV.k
-                );
-
-                gyroscope[0] = angles.pitch;
-                gyroscope[1] = angles.yaw;
-                gyroscope[2] = angles.roll;
-                break;
+                gyroscope[0] = sensorData.un.gameRotationVector.i;
+                gyroscope[1] = sensorData.un.gameRotationVector.j;
+                gyroscope[2] = sensorData.un.gameRotationVector.k;
+                gyroscope[3] = sensorData.un.gameRotationVector.real;
             }
 
             default: break;
@@ -212,7 +209,7 @@ SensedData readSensors() {
 
         {acceleration[0], acceleration[1], acceleration[2]},
         accelerationStatus,
-        {gyroscope[0],    gyroscope[1],    gyroscope[2]   },
+        {gyroscope[0], gyroscope[1], gyroscope[2], gyroscope[3]},
         gyroscopeStatus,
 
         gps.time.value(),
