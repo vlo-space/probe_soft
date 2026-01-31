@@ -209,7 +209,7 @@ SensedData readSensors() {
 
         {acceleration[0], acceleration[1], acceleration[2]},
         accelerationStatus,
-        {gyroscope[0], gyroscope[1], gyroscope[2], gyroscope[3]},
+        { gyroscope[0],   gyroscope[1],    gyroscope[2],    gyroscope[3]},
         gyroscopeStatus,
 
         gps.time.value(),
