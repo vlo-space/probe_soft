@@ -1,9 +1,10 @@
 #ifndef H_CANSAT_SENSORS
 #define H_CANSAT_SENSORS
 
+#include "math.hpp"
+
 #include <Arduino.h>
 #include <cstdint>
-#include "math.hpp"
 
 struct __attribute__((packed)) SensedData {
     uint32_t index;

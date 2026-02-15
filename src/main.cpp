@@ -1,10 +1,10 @@
 #include "angles_util.hpp"
 #include "data.h"
 #include "data_collector.hpp"
+#include "ins.hpp"
+#include "math.hpp"
 #include "nmea_util.hpp"
 #include "pins.h"
-#include "math.hpp"
-#include "ins.hpp"
 
 #include <ace_crc/crc32_nibble.hpp>
 #include <Adafruit_BMP280.h>
@@ -69,7 +69,7 @@ DataCollector altitude;
 
 bool landingStandDeployed = false;
 
-ins::Previous prev; 
+ins::Previous prev;
 unsigned long lastTime;
 
 void fatalError(const char* error) {
@@ -164,7 +164,7 @@ SensedData readSensors() {
         }
     }
 
-    float pressure =  bmp280.readPressure();
+    float pressure = bmp280.readPressure();
     float temperature = bmp280.readTemperature();
     uint8_t readEventCount = 0;
 
@@ -203,7 +203,7 @@ SensedData readSensors() {
 
         readEventCount++;
     }
-  
+
     Vec3 pos = ins::calculate(acceleration, gyroscope, millis() - lastTime, prev);
     lastTime = millis();
 
@@ -235,7 +235,7 @@ SensedData readSensors() {
 void loop() {
 
     collectedData.push(readSensors());
-   // delay(READ_DELAY);
+    // delay(READ_DELAY);
 
     altitude.addReading(bmp280.readAltitude(SEA_LEVEL_PRESSURE), micros());
 
@@ -263,8 +263,8 @@ void loop() {
 
         Frame radioBuffer[RADIO_PACKET_FRAME_COUNT] = {{0}};
         uint8_t radioBufferedCount = 0;
-             const SensedData* data = collectedData.front();
-            data->print(&SerialUSB);
+        const SensedData* data = collectedData.front();
+        data->print(&SerialUSB);
 
         while (!collectedData.empty()) {
             data->print(&logFile);
