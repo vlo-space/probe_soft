@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <cstdint>
+#include "math.hpp"
 
 struct __attribute__((packed)) SensedData {
     uint32_t index;
@@ -17,6 +18,9 @@ struct __attribute__((packed)) SensedData {
     uint8_t accelerationStatus;
     float gyroscope[4];
     uint8_t gyroscopeStatus;
+    float ins_position_x;
+    float ins_position_y;
+    float ins_position_z;
 
     uint32_t gpsTime;
     double gpsLatitude;
@@ -53,6 +57,12 @@ struct __attribute__((packed)) SensedData {
         output->print('\t');
         output->print(this->gyroscopeStatus);
         output->print('\t');
+        output->print(this->ins_position_x);
+        output->print('\t');
+        output->print(this->ins_position_y);
+        output->print('\t');
+        output->print(this->ins_position_z);
+        output->print('\t');
         output->print(this->gpsTime);
         output->print('\t');
         output->print(this->gpsLatitude, 6);
@@ -70,6 +80,6 @@ struct __attribute__((packed)) Frame {
     uint32_t checksum;
 };
 
-static_assert(sizeof(Frame) < 85, "Radio frame too big");
+static_assert(sizeof(Frame) < 96, "Radio frame too big");
 
 #endif

@@ -3,6 +3,8 @@
 #include "data_collector.hpp"
 #include "nmea_util.hpp"
 #include "pins.h"
+#include "math.hpp"
+#include "ins.hpp"
 
 #include <ace_crc/crc32_nibble.hpp>
 #include <Adafruit_BMP280.h>
@@ -67,6 +69,9 @@ DataCollector altitude;
 
 bool landingStandDeployed = false;
 
+ins::Previous prev; 
+unsigned long lastTime;
+
 void fatalError(const char* error) {
     while (true) {
         SerialUSB.print("ERROR: ");
@@ -79,14 +84,14 @@ void fatalError(const char* error) {
 }
 
 void setupBNO08x() {
-    if (!bno08x.enableReport(SH2_LINEAR_ACCELERATION, 100)) {
+    if (!bno08x.enableReport(SH2_LINEAR_ACCELERATION, 10)) {
         fatalError("BNO08x accelerometer init failed");
     }
-    if (!bno08x.enableReport(SH2_ARVR_STABILIZED_RV, 5000)) {
+    if (!bno08x.enableReport(SH2_ARVR_STABILIZED_RV, 10)) {
         fatalError("BNO08x gyroscope init failed");
     }
 
-    if (!bno08x.enableReport(SH2_GAME_ROTATION_VECTOR, 5000)) {
+    if (!bno08x.enableReport(SH2_GAME_ROTATION_VECTOR, 10)) {
         fatalError("BNO08x gyroscope init failed");
     }
 }
@@ -144,6 +149,7 @@ void setup() {
         logFile.println("--- STARTUP ---");
         logFile.flush();
     }
+    lastTime = millis();
 }
 
 SensedData readSensors() {
@@ -158,7 +164,7 @@ SensedData readSensors() {
         }
     }
 
-    float pressure = bmp280.readPressure();
+    float pressure =  bmp280.readPressure();
     float temperature = bmp280.readTemperature();
     uint8_t readEventCount = 0;
 
@@ -172,7 +178,7 @@ SensedData readSensors() {
     }
 
     sh2_SensorValue sensorData;
-    while (readEventCount < 5 && bno08x.getSensorEvent(&sensorData)) {
+    while (readEventCount < 6 && bno08x.getSensorEvent(&sensorData)) {
         switch (sensorData.sensorId) {
             case SH2_LINEAR_ACCELERATION:
                 accelerationStatus = sensorData.status & 0b11;
@@ -197,6 +203,9 @@ SensedData readSensors() {
 
         readEventCount++;
     }
+  
+    Vec3 pos = ins::calculate(acceleration, gyroscope, millis() - lastTime, prev);
+    lastTime = millis();
 
     return {
         sensedDataIndex++,
@@ -212,6 +221,10 @@ SensedData readSensors() {
         { gyroscope[0],   gyroscope[1],    gyroscope[2],    gyroscope[3]},
         gyroscopeStatus,
 
+        pos.get_x(),
+        pos.get_y(),
+        pos.get_z(),
+
         gps.time.value(),
         (gps.location.isValid()) ? gps.location.lat() : NAN,
         (gps.location.isValid()) ? gps.location.lng() : NAN,
@@ -222,7 +235,7 @@ SensedData readSensors() {
 void loop() {
 
     collectedData.push(readSensors());
-    delay(READ_DELAY);
+   // delay(READ_DELAY);
 
     altitude.addReading(bmp280.readAltitude(SEA_LEVEL_PRESSURE), micros());
 
@@ -250,11 +263,10 @@ void loop() {
 
         Frame radioBuffer[RADIO_PACKET_FRAME_COUNT] = {{0}};
         uint8_t radioBufferedCount = 0;
+             const SensedData* data = collectedData.front();
+            data->print(&SerialUSB);
 
         while (!collectedData.empty()) {
-            const SensedData* data = collectedData.front();
-
-            data->print(&SerialUSB);
             data->print(&logFile);
 
             radioBuffer[radioBufferedCount] = (Frame) {
